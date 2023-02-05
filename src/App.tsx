@@ -4,57 +4,39 @@ import Main from './components/main';
 import TodoContainer from './components/todoContainer';
 import TodoBox from './components/todoBox';
 import Navbar from './components/navbar';
+import Spinner from './components/spinner';
+import ErrorPage from './components/errpage';
 import { getTodos, postTodo } from './api';
 import { TodoInterface, PostDataInterface } from './interfaces/global-interfaces';
 import {
     useQuery,
     useMutation,
     useQueryClient,
-    QueryClient,
-    QueryClientProvider,
 } from 'react-query'
 import { ToastContainer, toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
 
-const queryClient = new QueryClient()
-
 
 function App() {
-    return (
-        <QueryClientProvider client={queryClient}>
-            <TodoApp />
-        </QueryClientProvider>
-    );
-}
-
-
-function TodoApp() {
     const [temp, setTemp] = useState("");
-    const [todos, setTodo] = useState([]);
+    const [isRefetch, setRefetch] = useState(false);
 
     const queryClient = useQueryClient()
 
-    const { isLoading, error, data, refetch } = useQuery('todos', getTodos, {
-        onSuccess: (data) => {
-            setTodo(data)
-        },
-        onError: (error) => {
-            console.log(error)
-        }
-    });
+    const { isLoading, error, data, refetch } = useQuery('todos', getTodos);
 
     useEffect(() => {
         console.log("Do nothing")
         refetch()
-    }, [todos])
+    }, [isRefetch])
 
 
     const mutation = useMutation(postTodo, {
         onSuccess: () => {
             // Invalidate and refetch
             queryClient.invalidateQueries('todos')
-            setTodo([])
+            setRefetch(!isRefetch)
         },
     })
 
@@ -80,7 +62,12 @@ function TodoApp() {
     }
 
     if (isLoading) {
-        return <div>Loading...</div>
+        return <Spinner />
+    }
+
+
+    if (error) {
+        return <ErrorPage />
     }
 
 
@@ -104,7 +91,7 @@ function TodoApp() {
                 {
                     isLoading ? <span>Updating...</span> :
                         data.map((todo: TodoInterface) => {
-                            return <TodoBox todo={todo.todo} status={todo.status} _id={todo._id} callback={setTodo} />
+                            return <TodoBox todo={todo.todo} status={todo.status} _id={todo._id} callback={setRefetch} />
                         })
                 }
             </TodoContainer>
