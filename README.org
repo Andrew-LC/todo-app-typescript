@@ -1,0 +1,16 @@
+* A Simple Todo App -V2
+
+ The main motivation behind this project is to learn MERN stack and typescript.
+
+ [[./public/images/app.png]]
+ 
+ The Tech stack used in this project are:
+
+ - React
+ - Typescript
+ - TailwindCSS
+ - Axios
+ - Express
+ - Mongoose
+ - React Toast
+ - eact query
