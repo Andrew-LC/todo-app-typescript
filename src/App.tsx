@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import Main from './components/main';
 import TodoContainer from './components/todoContainer';
 import TodoBox from './components/todoBox';
@@ -12,7 +11,7 @@ import {
     useQuery,
     useMutation,
     useQueryClient,
-} from 'react-query'
+} from '@tanstack/react-query'
 import { ToastContainer, toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,25 +19,24 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     const [temp, setTemp] = useState("");
-    const [isRefetch, setRefetch] = useState(false);
 
     const queryClient = useQueryClient()
 
-    const { isLoading, error, data, refetch } = useQuery('todos', getTodos);
+    const { isLoading, isError, error, data, refetch } = useQuery({
+        queryKey: ['todos'],
+        queryFn: getTodos
+    });
 
-    useEffect(() => {
-        console.log("Do nothing")
-        refetch()
-    }, [isRefetch])
-
-
-    const mutation = useMutation(postTodo, {
-        onSuccess: () => {
-            // Invalidate and refetch
-            queryClient.invalidateQueries('todos')
-            setRefetch(!isRefetch)
+    const mutation = useMutation({
+        mutationFn: (newTodo: any) => {
+            return postTodo(newTodo)
         },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['todos'] })
+                .then(() => refetch())
+        }
     })
+
 
     const handleSubmit = () => {
         if (temp) {
@@ -91,7 +89,7 @@ function App() {
                 {
                     isLoading ? <span>Updating...</span> :
                         data.map((todo: TodoInterface) => {
-                            return <TodoBox todo={todo.todo} status={todo.status} _id={todo._id} callback={setRefetch} />
+                            return <TodoBox todo={todo.todo} status={todo.status} _id={todo._id} callback={refetch} />
                         })
                 }
             </TodoContainer>
