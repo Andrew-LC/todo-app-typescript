@@ -37,7 +37,6 @@ router.put('/updateTodo/:id', (req, res) => {
 
 router.delete('/deleteTodo/:id', (req, res) => {
   const { id } = req.params;
-  console.log(id)
 
   Todo.findByIdAndDelete({ _id: id })
     .then((doc) => {
